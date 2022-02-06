@@ -15,26 +15,26 @@ foreach ($dir in $directories) {
         $isGitError = $gitOutputString -match "fatal"
 
         if ($isGitError) {
-            Write-Output("git fatal error happened in directory $dir\: $gitOutputString")
+            Write-Host "git fatal error happened in directory $dir\: $gitOutputString" -ForegroundColor darkred
             continue
         }
 
         $untrackedFilesExist = git status --porcelain | Where-Object { $_ -match '^\?\?' }
         if ($untrackedFilesExist) {
-            Write-Output("There are untracked files in $dir")
+            Write-Host "There are untracked files in $dir" -ForegroundColor yellow
         }
         else {
             $uncommitedChangesExist = git status --porcelain | Where-Object { $_ -notmatch '^\?\?' }
             if ($uncommitedChangesExist) {
-                Write-Output("There are uncommitted changes to files in $dir")
+                Write-Host "There are uncommitted changes to files in $dir" -ForegroundColor yellow
             }
             else {
-                Write-Output("$dir is clean")
+                Write-Host "$dir is clean" -ForegroundColor green
             }
         }
     }
     catch {
-        Write-Output("ERROR while working with directory $dir")
+        Write-Host "ERROR while working with directory $dir" -ForegroundColor darkred
     }
 }
 
