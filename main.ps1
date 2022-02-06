@@ -1,8 +1,8 @@
-param([string]$path = "C:\Users\dmitr\source\repos")
+param([string]$path = "C:\Users\$env:UserName\source\repos")
 
 $initialLocation = Get-Location
 
-Write-Output("Checking git statuses for path $path")
+Write-Host "Checking git statuses for path $path" -ForegroundColor darkblue
 
 $directories = @(Get-ChildItem -Path $path -Directory | Select-Object -ExpandProperty FullName)
 
