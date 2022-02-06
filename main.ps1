@@ -2,20 +2,39 @@ param([string]$path = "C:\Users\dmitr\source\repos")
 
 $initialLocation = Get-Location
 
-Write-Output("Checking git statuses for path " + $path)
+Write-Output("Checking git statuses for path $path")
 
 $directories = @(Get-ChildItem -Path $path -Directory | Select-Object -ExpandProperty FullName)
 
 foreach ($dir in $directories) {
-    Write-Output($dir)
     Set-Location -Path $dir
+    try {
+        # redirect stderr to stdout https://tldp.org/HOWTO/Bash-Prog-Intro-HOWTO-3.html
+        $gitOutputString = $(git status --porcelain 2>&1)
 
-    $result = git diff-index --quiet HEAD
-    if (0 -eq $result) {
-        Write-Output("no uncommited changes in " + $dir)
+        $isGitError = $gitOutputString -match "fatal"
+
+        if ($isGitError) {
+            Write-Output("git fatal error happened in directory $dir\: $gitOutputString")
+            continue
+        }
+
+        $untrackedFilesExist = git status --porcelain | Where-Object { $_ -match '^\?\?' }
+        if ($untrackedFilesExist) {
+            Write-Output("There are untracked files in $dir")
+        }
+        else {
+            $uncommitedChangesExist = git status --porcelain | Where-Object { $_ -notmatch '^\?\?' }
+            if ($uncommitedChangesExist) {
+                Write-Output("There are uncommitted changes to files in $dir")
+            }
+            else {
+                Write-Output("$dir is clean")
+            }
+        }
     }
-    else {
-        Write-Output("uncommitted changes in " + $dir)
+    catch {
+        Write-Output("ERROR while working with directory $dir")
     }
 }
 
